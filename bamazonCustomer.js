@@ -3,6 +3,7 @@
 
 let mysql = require("mysql");
 let inquirer = require("inquirer");
+let Table = require("cli-table");
 
 //Creating connection to MySQL Server=============================================
 
@@ -28,18 +29,24 @@ function displayProducts() {
         "SELECT * FROM products",
         function (err, res) {
             if (err) throw err;
-            console.table(res, ["item_id", "product_name", "department_name", "price"]);
+
+            let table = new Table({
+                head: ["item_id", "product_name", "department_name", "price"],
+                colWidths: [20, 20, 20, 20]
+            });
+
+            for (let i = 0; i < res.length; i++) {
+                let itemId = res[i].item_id;
+                let productName = res[i].product_name;
+                let departmentName = res[i].department_name;
+                let productPrice = res[i].price;
+                table.push(
+                    [itemId, productName, departmentName, productPrice]
+                );
+            }
+
+            console.log(table.toString());
             start();
-
-            // for (let i = 0; i < res.length; i++) {
-            //     let itemId = res[i].item_id;
-            //     let productName = res[i].product_name;
-            //     let departmentName = res[i].department_name;
-            //     let productPrice = res[i].price;
-            //     let stockQuantity = res[i].stock_quantity;
-            //     console.log(itemId + productName + departmentName + productPrice + "\n");
-            // }
-
         }
     );
 };
@@ -67,19 +74,62 @@ function start() {
 
     ]).then(function (answers) {
 
-        var productSelection = answers.productSelection;
-        let selectionQuantity = answers.selectionQuantity;
+        let productSelection = answers.productSelection;
+        let selectionQuantity = parseInt(answers.selectionQuantity);
 
         connection.query(
-            "SELECT item_id FROM products WHERE = ?",
-            [parseInt(productSelection)],
-            function (err, res) {
+            "SELECT * FROM products WHERE item_id = " + productSelection,
+            function (err, res, fields) {
+
                 if (err) {
                     console.log(err);
+                    return;
                 }
-                console.log(res);
+
+                let currentQuantity = parseInt(res[0].stock_quantity);
+                let productPrice = res[0].price;
+
+                if (selectionQuantity > currentQuantity) {
+                    console.log("\n Insufficient Quantity\n There is only " + currentQuantity + " left in stock\n Please Try Again\n")
+                    connection.end();
+                }
+                else {
+
+                    inquirer.prompt([
+                        {
+                            name: "confirmPurchase",
+                            type: "list",
+                            message: "This item costs $" + productPrice + ". Do you wish to proceed?",
+                            choices: ["BUY", "EXIT"]
+                        }
+                    ]).then(function (answers) {
+
+                        if (answers.confirmPurchase === "BUY") {
+                            console.log("\nPurchase Successful\nThank you & come again!");
+                            let updatedQuantity = currentQuantity - selectionQuantity;
+                            updateProduct(productSelection, updatedQuantity);
+                            connection.end();
+                        }
+                        else {
+                            connection.end();
+                        }
+                    });
+                };
             }
         );
     });
 
+};
+
+function updateProduct(productSelection, updatedQuantity) {
+    connection.query(
+        "UPDATE products SET stock_quantity = ? WHERE item_id = ?",
+        [updatedQuantity, productSelection],
+        function (err, res, fields) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+        }
+    );
 };
