@@ -1,4 +1,3 @@
-
 // Dependencies===================================================================
 
 let mysql = require("mysql");
@@ -23,6 +22,8 @@ connection.connect(function (err) {
     console.log("successful connection");
     displayProducts();
 });
+
+//Display Products===============================================================
 
 function displayProducts() {
     connection.query(
@@ -51,10 +52,26 @@ function displayProducts() {
     );
 };
 
+//Update Products=================================================================
+
+function updateProduct(productSelection, updatedQuantity) {
+    connection.query(
+        "UPDATE products SET stock_quantity = ? WHERE item_id = ?",
+        [updatedQuantity, productSelection],
+        function (err, res, fields) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+        }
+    );
+};
+
+
+
 function start() {
 
     inquirer.prompt([
-
         {
             type: "input",
             name: "productSelection",
@@ -94,7 +111,6 @@ function start() {
                     connection.end();
                 }
                 else {
-
                     inquirer.prompt([
                         {
                             name: "confirmPurchase",
@@ -114,22 +130,8 @@ function start() {
                             connection.end();
                         }
                     });
-                };
+                }
             }
         );
     });
-
-};
-
-function updateProduct(productSelection, updatedQuantity) {
-    connection.query(
-        "UPDATE products SET stock_quantity = ? WHERE item_id = ?",
-        [updatedQuantity, productSelection],
-        function (err, res, fields) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-        }
-    );
 };
