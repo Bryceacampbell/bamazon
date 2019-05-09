@@ -14,24 +14,16 @@
 
 ## View Products
 
-___
-
 ![](images/manager-view-products.gif)
 
 ## View Low Inventory
-
-___
 
 ![](images/manager-view-low.gif)
 
 ## Add To Inventory
 
-___
-
 ![](images/manager-add-inventory.gif)
 
 ## Add New Product
-
-___
 
 ![](images/manager-add-products.gif)
