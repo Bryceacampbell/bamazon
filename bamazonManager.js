@@ -44,7 +44,8 @@ function start() {
                 viewLowInventory();
                 break;
             case "Add to Inventory":
-                addToInventory();
+                displayProducts();
+                setTimeout(addToInventory, 300);
                 break;
             case "Add New Product":
                 addNewProduct();
@@ -114,8 +115,6 @@ function viewLowInventory() {
 };
 
 function addToInventory() {
-
-    displayProducts()
 
     inquirer.prompt([
         {
